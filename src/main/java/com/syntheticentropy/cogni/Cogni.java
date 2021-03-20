@@ -1,4 +1,5 @@
 package com.syntheticentropy.cogni;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
@@ -28,6 +29,12 @@ public class Cogni
     public Cogni() {
         // Register the setup method for modloading
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+        // Register the doClientStuff method for modloading
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
+        // Register the enqueueIMC method for modloading
+        FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(Item.class, this::registerItems);
+        // Register the processIMC method for modloading
+        FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(Block.class, this::registerBlocks);
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
@@ -40,6 +47,11 @@ public class Cogni
         LOGGER.info("DIRT BLOCK >> {}", Blocks.DIRT.getRegistryName());
     }
 
+    private void doClientStuff(final FMLClientSetupEvent event) {
+        // do something that can only be done on the client
+        LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().options);
+    }
+
     // You can use SubscribeEvent and let the Event Bus discover methods to call
     @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event) {
@@ -47,26 +59,13 @@ public class Cogni
         LOGGER.info("HELLO from server starting");
     }
 
-    @SubscribeEvent
-    public void registerItems(RegistryEvent.Register<Item> event) {
-//        event.getRegistry().registerAll(new Item(new Item.Properties().tab(event.getRegistry().)).setRegistryName("example_item"));
+    private void registerItems(RegistryEvent.Register<Item> event) {
+        event.getRegistry().registerAll(new Item(new Item.Properties()).setRegistryName("example_item"));
         LOGGER.info("HELLO from register items!");
     }
 
-    @SubscribeEvent
-    public void registerBlocks(RegistryEvent.Register<Block> event) {
-//        event.getRegistry().registerAll(new Block(...), new Block(...), ...);
+    private void registerBlocks(RegistryEvent.Register<Block> event) {
+//        event.getRegistry().registerAll(new Block(), new Block(...), ...);
         LOGGER.info("HELLO from register blocks!");
     }
-
-    // You can use EventBusSubscriber to automatically subscribe events on the contained class (this is subscribing to the MOD
-    // Event bus for receiving Registry Events)
-//    @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.MOD)
-//    public static class RegistryEvents {
-//        @SubscribeEvent
-//        public static void onBlocksRegistry(final RegistryEvent.Register<Block> blockRegistryEvent) {
-//            // register a new block here
-//            LOGGER.info("HELLO from Register Block");
-//        }
-//    }
 }
