@@ -1,0 +1,6 @@
+
+# environment and gradle
+.gradle
+.idea
+build
+run
