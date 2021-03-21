@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern":
+  [
+    "scs",
+    "   ",
+    "   "
+  ],
+  "key":
+  {
+    "c":
+    {
+      "item": "minecraft:stick"
+    },
+    "s":
+    {
+      "item": "minecraft:stone"
+    }
+  },
+  "result":
+  {
+    "item": "cogni:example_item",
+    "count": 1
+  }
+}

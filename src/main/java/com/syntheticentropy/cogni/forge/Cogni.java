@@ -1,8 +1,12 @@
-package com.syntheticentropy.cogni;
+package com.syntheticentropy.cogni.forge;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -60,7 +64,8 @@ public class Cogni
     }
 
     private void registerItems(RegistryEvent.Register<Item> event) {
-        event.getRegistry().registerAll(new Item(new Item.Properties()).setRegistryName("example_item"));
+        event.getRegistry().registerAll(Items.EXAMPLE_ITEM);
+
         LOGGER.info("HELLO from register items!");
     }
 
