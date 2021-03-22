@@ -1,10 +1,13 @@
 package com.syntheticentropy.cogni.forge;
+import com.syntheticentropy.cogni.forge.entity.EntityTypes;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
@@ -39,6 +42,10 @@ public class Cogni
         FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(Item.class, this::registerItems);
         // Register the processIMC method for modloading
         FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(Block.class, this::registerBlocks);
+        // Register the processIMC method for modloading
+        FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(EntityType.class, this::registerEntityTypes);
+        // Register the processIMC method for modloading
+        FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(TileEntityType.class, this::registerTileEntityTypes);
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
@@ -71,6 +78,19 @@ public class Cogni
 
     private void registerBlocks(RegistryEvent.Register<Block> event) {
 //        event.getRegistry().registerAll(new Block(), new Block(...), ...);
+
         LOGGER.info("HELLO from register blocks!");
+    }
+
+    private void registerEntityTypes(RegistryEvent.Register<EntityType<?>> event) {
+        event.getRegistry().registerAll(EntityTypes.COGNIGOLEM);
+
+        LOGGER.info("HELLO from register entityTypes!");
+    }
+
+    private void registerTileEntityTypes(RegistryEvent.Register<TileEntityType<?>> event) {
+//        event.getRegistry().registerAll(Items.EXAMPLE_ITEM);
+
+        LOGGER.info("HELLO from register tileEntityTypes!");
     }
 }
