@@ -1,5 +1,6 @@
-package com.syntheticentropy.cogni.forge;
+package com.syntheticentropy.cogni.forge.item;
 
+import com.syntheticentropy.cogni.forge.item.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;

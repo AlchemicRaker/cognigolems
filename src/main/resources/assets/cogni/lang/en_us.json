@@ -1,4 +1,5 @@
 {
   "item.cogni.example_item": "Example Item Name",
-  "itemGroup.cogni": "Cognigolems"
+  "itemGroup.cogni": "Cognigolems",
+  "block.cogni.hivemind": "Hivemind"
 }
