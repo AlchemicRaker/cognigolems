@@ -1,5 +1,5 @@
 # cognigolems
-Craftable and programmable golem companions. Programming should be simple and powerful, using a **logical programming** paradigm.
+Craftable and programmable golem companions. Programming should be simple and powerful, using a **logic programming** paradigm.
 They can be used to automate repeatable tasks around your base or follow and help out while you explore the world.
 
 ## concept
@@ -11,8 +11,8 @@ Other forms are possible, such as ornithopters or shulkers, which each come with
 
 ## examples
 Below are examples of what cognigolems can do, and how they are programmed.
-It becomes quickly apparent how different **logical programming** is from **procedural programming**.
-With **logical programming** it is often enough to describe the interactions you desire, and the computer will look for opportunities to make it work. 
+It becomes quickly apparent how different **logic programming** is from **procedural programming**.
+With **logic programming** it is often enough to describe the interactions you desire, and the computer will look for opportunities to make it work. 
 
 ### storage system and sorting
 In this example you want to program a sorting golem that takes items from a dump chest and sorts it into your storage room.
