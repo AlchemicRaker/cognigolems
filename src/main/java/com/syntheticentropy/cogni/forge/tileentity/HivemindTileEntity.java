@@ -1,8 +1,10 @@
 package com.syntheticentropy.cogni.forge.tileentity;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.merchant.villager.WanderingTraderEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.container.ChestContainer;
 import net.minecraft.inventory.container.Container;
@@ -27,22 +29,24 @@ public class HivemindTileEntity extends LockableTileEntity {
 
     @Override
     protected ITextComponent getDefaultName() {
-        return new TranslationTextComponent("hivemind");
+        return new TranslationTextComponent("container.hivemind");
     }
 
-    public void load(BlockState p_230337_1_, CompoundNBT p_230337_2_) {
-        super.load(p_230337_1_, p_230337_2_);
+    public void load(BlockState blockState, CompoundNBT compoundNBT) {
+        super.load(blockState, compoundNBT);
         this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+        ItemStackHelper.loadAllItems(compoundNBT, this.items);
     }
 
-    public CompoundNBT save(CompoundNBT p_189515_1_) {
-        super.save(p_189515_1_);
-        return p_189515_1_;
+    public CompoundNBT save(CompoundNBT compoundNBT) {
+        super.save(compoundNBT);
+        ItemStackHelper.saveAllItems(compoundNBT, this.items);
+        return compoundNBT;
     }
 
     @Override
-    protected Container createMenu(int p_213906_1_, PlayerInventory p_213906_2_) {
-        return ChestContainer.threeRows(p_213906_1_, p_213906_2_, this);
+    protected Container createMenu(int p_213906_1_, PlayerInventory playerInventory) {
+        return ChestContainer.threeRows(p_213906_1_, playerInventory, this);
     }
 
     @Override
