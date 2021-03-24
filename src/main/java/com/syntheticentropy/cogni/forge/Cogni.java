@@ -3,10 +3,13 @@ import com.syntheticentropy.cogni.forge.block.Blocks;
 import com.syntheticentropy.cogni.forge.entity.EntityTypes;
 import com.syntheticentropy.cogni.forge.item.ItemGroup;
 import com.syntheticentropy.cogni.forge.item.Items;
+import com.syntheticentropy.cogni.forge.tileentity.TileEntityTypes;
 import net.minecraft.block.Block;
+import net.minecraft.block.FurnaceBlock;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.tileentity.FurnaceTileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
@@ -84,7 +87,7 @@ public class Cogni
     }
 
     private void registerTileEntityTypes(RegistryEvent.Register<TileEntityType<?>> event) {
-//        event.getRegistry().registerAll(Items.EXAMPLE_ITEM);
+        event.getRegistry().registerAll(TileEntityTypes.HIVEMIND);
 
         LOGGER.info("HELLO from register tileEntityTypes!");
     }

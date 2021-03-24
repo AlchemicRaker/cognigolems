@@ -1,6 +1,7 @@
 package com.syntheticentropy.cogni.forge.block;
 
 import com.syntheticentropy.cogni.forge.item.Items;
+import com.syntheticentropy.cogni.forge.tileentity.HivemindTileEntity;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.item.BlockItemUseContext;
@@ -24,13 +25,14 @@ public class HivemindBlock extends Block {
 
     @Override
     public boolean hasTileEntity(BlockState state) {
-        return false;
+        return true;
     }
 
     @Nullable
     @Override
     public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-        return null;
+//        return null;
+        return new HivemindTileEntity();
     }
 
     @Override
