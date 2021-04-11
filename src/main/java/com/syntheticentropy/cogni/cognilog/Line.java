@@ -2,6 +2,7 @@ package com.syntheticentropy.cogni.cognilog;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public abstract class Line {
     /*
@@ -22,6 +23,10 @@ public abstract class Line {
 
     public List<Optional<Integer>> getArgumentSymbols() {
         return argumentSymbols;
+    }
+
+    public List<Integer> getDefinedSymbols() {
+        return argumentSymbols.stream().filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
     }
 
     public boolean isAction() {

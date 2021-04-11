@@ -15,8 +15,32 @@ public class CompiledQuery {
                 .distinct()
                 .collect(Collectors.toList());
 
-        List<RuleLine> unusedRules = new ArrayList<>(rules);
-        List<Integer> remainingSymbols = new ArrayList<>(requiredSymbols);
+        // First find all rules that are connected to the action's symbols
+        List<Integer> connectedSymbols = new ArrayList<>(requiredSymbols);
+        List<RuleLine> unconnectedRules = new ArrayList<>(rules);
+        List<RuleLine> connectedRules = new ArrayList<>();
+        List<RuleLine> nextConnectedRules;
+        do {
+            // Do this thing so we can reference it in the lambda
+            List<Integer> finalConnectedSymbols = connectedSymbols;
+            nextConnectedRules = unconnectedRules.stream()
+                    .filter(ruleLine -> ruleLine.getDefinedSymbols().stream().anyMatch(finalConnectedSymbols::contains))
+                    .collect(Collectors.toList());
+
+            if (nextConnectedRules.size() > 0) {
+                connectedRules.addAll(nextConnectedRules);
+                unconnectedRules.removeAll(nextConnectedRules);
+                connectedSymbols = Stream.concat(connectedSymbols.stream(),
+                        connectedRules.stream().flatMap(rule -> rule.getDefinedSymbols().stream()))
+                        .distinct()
+                        .collect(Collectors.toList());
+            }
+        } while(nextConnectedRules.size() > 0);
+
+        // We've now identified all rules that are connected to what we're doing!
+        // We must track them and make sure they're all used
+
+        List<RuleLine> unusedRules = new ArrayList<>(connectedRules);
         List<Integer> knownSymbols = Collections.emptyList();
         List<IndexedRuleLine> compiledRules = new ArrayList<>();
 
@@ -26,9 +50,8 @@ public class CompiledQuery {
 
         // Well this is working, but it's wrong
         // It should be attempting to use all rules
-        // If remainingsymbols is > 0 at the end, then it's simply an invalid program
         // But if all rules can't be used, it's even more invalid invalid
-        while (remainingSymbols.size() > 0) {
+        while (unusedRules.size() > 0) {
             Stream<IndexedRuleLine> implementationsStream = unusedRules.stream()
                     .flatMap(CompiledQuery::indexedRuleLinesFrom)
                     .sorted(indexedRuleLineComparator);
@@ -43,10 +66,12 @@ public class CompiledQuery {
                 return maybeRequiredSymbols.filter(finalKnownSymbols::containsAll).isPresent();
             }).findFirst();
 
-            // If we didn't find any more sources of symbols, the query can't possibly be completed
+
+            // If we didn't find a way to resolve another rule, the query can't possibly be completed
             if(!nextRuleLine.isPresent()) {
                 return Optional.empty();
             }
+
 
             // What are the newly discovered symbols?
             List<Integer> discoveredSymbolStream = nextRuleLine.get().getRuleLine().getArgumentSymbols().stream()
@@ -58,21 +83,15 @@ public class CompiledQuery {
                     .distinct()
                     .collect(Collectors.toList());
 
-            // Remove from list of symbols we still need to find
-            remainingSymbols = remainingSymbols.stream()
-                    .filter(symbol -> !discoveredSymbolStream.contains(symbol))
-                    .collect(Collectors.toList());
-
-            // No way this ruleLine can help us any more in future iterations
+            // include use rules only once
             unusedRules.remove(nextRuleLine.get().getRuleLine());
 
             compiledRules.add(nextRuleLine.get());
         }
 
-        // All symbols found
-        // All necessary rules are compiled and ordered
 
-        // Now tack on ANY remaining rules using their least complex
+        // All symbols found
+        // All connected rules are compiled and ordered
 
         return Optional.of(new CompiledQuery(actions, compiledRules));
     }

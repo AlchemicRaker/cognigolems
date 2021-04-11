@@ -42,18 +42,20 @@ public class ProgramTest {
 
     private static Program getComplexProgram() {
         ActionLine action = new ActionLine(
-                Arrays.asList(1, 2, 6),
-                Arrays.asList(1, 1, 1));
+                Arrays.asList(6),
+                Arrays.asList(1));
 
         RuleLine constRule1 = new ConstantRuleLine(
                 Arrays.asList(Optional.of(1), Optional.of(2), Optional.of(4)),
                 Arrays.asList(1, 1, 1),
-                Arrays.asList(5, 5, 5));
+                Arrays.asList(5, 5, 5),
+                200);
 
         RuleLine constRule2 = new ConstantRuleLine(
                 Arrays.asList(Optional.of(3)),
                 Arrays.asList(1),
-                Arrays.asList(5));
+                Arrays.asList(5),
+                150);
 
         RuleLine constRule3 = new ConstantRuleLine(
                 Arrays.asList(Optional.of(4)),
@@ -92,10 +94,10 @@ public class ProgramTest {
         RuleLine rule5 = new RuleLine(
                 Arrays.asList(Optional.of(3), Optional.of(4), Optional.of(6)),
                 Arrays.asList(5, 5, 5),
-                Arrays.asList(rule5requireFirstTwo, rule5requireLast)
+                Arrays.asList(rule5requireLast, rule5requireFirstTwo)
         );
 
-        return Program.compileProgram(Arrays.asList(action, constRule1, constRule2, constRule3, rule5));
+        return Program.compileProgram(Arrays.asList(action, constRule1, constRule2, constRule3, constRule4, rule5));
     }
 
     @Test
