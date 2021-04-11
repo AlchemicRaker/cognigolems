@@ -20,7 +20,7 @@ public class CoreTest {
      */
 
     private Program getValidDummyProgram() {
-        return new Program(Arrays.asList(new ActionLine(Arrays.asList(),Arrays.asList())));
+        return Program.compileProgram(Arrays.asList(new ActionLine(Arrays.asList(),Arrays.asList())));
     }
 
     @Test
@@ -42,7 +42,7 @@ public class CoreTest {
 
     @Test
     void canFindEndOfSolutions() {
-        Core core = new Core(new Program(Arrays.asList()));
+        Core core = new Core(Program.compileProgram(Arrays.asList()));
         Core.SolutionResult solutionResult;
         do {
             solutionResult = core.findNextSolution();

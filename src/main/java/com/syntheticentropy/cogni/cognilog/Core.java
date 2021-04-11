@@ -23,7 +23,7 @@ public class Core {
         return new SolutionResult(Optional.empty(), 1, true);
     }
 
-    public class SolutionResult {
+    public static class SolutionResult {
         private final boolean isEndOfSearch;
         private final int iterationsUsed;
         private final Optional<Object> solution;
