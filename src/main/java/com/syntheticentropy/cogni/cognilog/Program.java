@@ -6,40 +6,40 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class Program {
+public class Program<T> {
 
-    public static Program compileProgram(List<Line> lines) {
+    public static <T> Program<T> compileProgram(List<Line<T>> lines) {
         //immediately try to compile this, check its validity, etc
         if(lines.size() == 0) {
-            return new Program(Collections.emptyList(), false);
+            return new Program<T>(Collections.emptyList(), false);
         }
 
-        final List<ActionLine> actionLines = lines.stream()
-                .filter(Line::isAction).map(line -> (ActionLine) line)
+        final List<ActionLine<T>> actionLines = lines.stream()
+                .filter(Line::isAction).map(line -> (ActionLine<T>) line)
                 .collect(Collectors.toList());
-        final List<RuleLine> ruleLines = lines.stream()
-                .filter(Line::isRule).map(line -> (RuleLine) line)
+        final List<RuleLine<T>> ruleLines = lines.stream()
+                .filter(Line::isRule).map(line -> (RuleLine<T>) line)
                 .collect(Collectors.toList());
 
         // No actions means no way to get solutions
         if(actionLines.size() == 0) {
-            return new Program(Collections.emptyList(), false);
+            return new Program<T>(Collections.emptyList(), false);
         }
         // No rules is fine. Actions don't necessarily require rules to function.
 
         // TODO: add action grouping, so multiple actions must be matched and execute in sequence.
-        final List<CompiledQuery> queries = actionLines.stream()
+        final List<CompiledQuery<T>> queries = actionLines.stream()
                 .map(actionLine -> CompiledQuery.compileQuery(Arrays.asList(actionLine), ruleLines))
                 .filter(Optional::isPresent).map(Optional::get)
                 .collect(Collectors.toList());
 
-        return new Program(queries, queries.size() > 0);
+        return new Program<T>(queries, queries.size() > 0);
     }
 
-    private final List<CompiledQuery> queries;
+    private final List<CompiledQuery<T>> queries;
     private final boolean isRunnable;
 
-    private Program(List<CompiledQuery> queries, boolean isRunnable) {
+    private Program(List<CompiledQuery<T>> queries, boolean isRunnable) {
         this.queries = queries;
         this.isRunnable = isRunnable;
         assert (queries.size() > 0) == isRunnable;
@@ -49,7 +49,7 @@ public class Program {
         return isRunnable;
     }
 
-    public List<CompiledQuery> getQueries() {
+    public List<CompiledQuery<T>> getQueries() {
         return queries;
     }
 }

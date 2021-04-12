@@ -3,11 +3,9 @@ package com.syntheticentropy.cogni.cognilog;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -67,7 +65,7 @@ public class ProgramTest {
                 Arrays.asList(1),
                 Arrays.asList(5));
 
-        RuleLine.RuleImplementation rule5requireFirstTwo = new RuleLine.RuleImplementation() {
+        RuleImplementation rule5requireFirstTwo = new RuleImplementation() {
             @Override
             public int complexity() {
                 return 100;
@@ -77,9 +75,14 @@ public class ProgramTest {
             public List<Integer> requiredArgumentIndexes() {
                 return Arrays.asList(0, 1);
             }
+
+            @Override
+            public RuleIterator createRuleIterator(Map<Integer, Symbol<?>> symbols) {
+                return null;
+            }
         };
 
-        RuleLine.RuleImplementation rule5requireLast = new RuleLine.RuleImplementation() {
+        RuleImplementation rule5requireLast = new RuleImplementation() {
             @Override
             public int complexity() {
                 return 100;
@@ -88,6 +91,11 @@ public class ProgramTest {
             @Override
             public List<Integer> requiredArgumentIndexes() {
                 return Arrays.asList(2);
+            }
+
+            @Override
+            public RuleIterator createRuleIterator(Map<Integer, Symbol<?>> symbols) {
+                return null;
             }
         };
 

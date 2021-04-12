@@ -5,9 +5,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class CompiledQuery {
+public class CompiledQuery<T> {
 
-    public static Optional<CompiledQuery> compileQuery(List<ActionLine> actions, List<RuleLine> rules) {
+    public static <T> Optional<CompiledQuery<T>> compileQuery(List<ActionLine<T>> actions, List<RuleLine<T>> rules) {
         // Find an order and combination of rules that provides all of the required symbols
 
         final List<Integer> requiredSymbols = actions.stream()
@@ -17,9 +17,9 @@ public class CompiledQuery {
 
         // First find all rules that are connected to the action's symbols
         List<Integer> connectedSymbols = new ArrayList<>(requiredSymbols);
-        List<RuleLine> unconnectedRules = new ArrayList<>(rules);
-        List<RuleLine> connectedRules = new ArrayList<>();
-        List<RuleLine> nextConnectedRules;
+        List<RuleLine<T>> unconnectedRules = new ArrayList<>(rules);
+        List<RuleLine<T>> connectedRules = new ArrayList<>();
+        List<RuleLine<T>> nextConnectedRules;
         do {
             // Do this thing so we can reference it in the lambda
             List<Integer> finalConnectedSymbols = connectedSymbols;
@@ -40,19 +40,19 @@ public class CompiledQuery {
         // We've now identified all rules that are connected to what we're doing!
         // We must track them and make sure they're all used
 
-        List<RuleLine> unusedRules = new ArrayList<>(connectedRules);
+        List<RuleLine<T>> unusedRules = new ArrayList<>(connectedRules);
         List<Integer> knownSymbols = Collections.emptyList();
-        List<IndexedRuleLine> compiledRules = new ArrayList<>();
+        List<IndexedRuleLine<T>> compiledRules = new ArrayList<>();
 
-        Optional<IndexedRuleLine> nextRuleLine;
+        Optional<IndexedRuleLine<T>> nextRuleLine;
 
-        Comparator<IndexedRuleLine> indexedRuleLineComparator = Comparator.comparingInt(e -> e.getImplementation().complexity());
+        Comparator<IndexedRuleLine<T>> indexedRuleLineComparator = Comparator.comparingInt(e -> e.getImplementation().complexity());
 
         // Well this is working, but it's wrong
         // It should be attempting to use all rules
         // But if all rules can't be used, it's even more invalid invalid
         while (unusedRules.size() > 0) {
-            Stream<IndexedRuleLine> implementationsStream = unusedRules.stream()
+            Stream<IndexedRuleLine<T>> implementationsStream = unusedRules.stream()
                     .flatMap(CompiledQuery::indexedRuleLinesFrom)
                     .sorted(indexedRuleLineComparator);
 
@@ -93,28 +93,28 @@ public class CompiledQuery {
         // All symbols found
         // All connected rules are compiled and ordered
 
-        return Optional.of(new CompiledQuery(actions, compiledRules));
+        return Optional.of(new CompiledQuery<T>(actions, compiledRules));
     }
 
-    private final List<ActionLine> actions;
-    private final List<IndexedRuleLine> rules;
+    private final List<ActionLine<T>> actions;
+    private final List<IndexedRuleLine<T>> rules;
 
-    public List<ActionLine> getActions() {
+    public List<ActionLine<T>> getActions() {
         return actions;
     }
 
-    public List<IndexedRuleLine> getRules() {
+    public List<IndexedRuleLine<T>> getRules() {
         return rules;
     }
 
-    private CompiledQuery(List<ActionLine> actions, List<IndexedRuleLine> rules) {
+    private CompiledQuery(List<ActionLine<T>> actions, List<IndexedRuleLine<T>> rules) {
         this.actions = actions;
         this.rules = rules;
     }
 
-    private static Stream<IndexedRuleLine> indexedRuleLinesFrom(RuleLine ruleLine) {
+    private static <T> Stream<IndexedRuleLine<T>> indexedRuleLinesFrom(RuleLine<T> ruleLine) {
         return IntStream.range(0, ruleLine.getRuleImplementations().size()).boxed()
-                .map(index -> new IndexedRuleLine(ruleLine, index));
+                .map(index -> new IndexedRuleLine<T>(ruleLine, index));
     }
 
     public String toDependencyString() {
@@ -124,19 +124,19 @@ public class CompiledQuery {
                 "\n}";
     }
 
-    public static class IndexedRuleLine {
-        private final RuleLine ruleLine;
+    public static class IndexedRuleLine<T> {
+        private final RuleLine<T> ruleLine;
         private final int implementationIndex;
-        private IndexedRuleLine(RuleLine ruleLine, int implementationIndex) {
+        private IndexedRuleLine(RuleLine<T> ruleLine, int implementationIndex) {
             this.ruleLine = ruleLine;
             this.implementationIndex = implementationIndex;
         }
 
-        public RuleLine getRuleLine() {
+        public RuleLine<T> getRuleLine() {
             return ruleLine;
         }
 
-        public RuleLine.RuleImplementation getImplementation() {
+        public RuleImplementation getImplementation() {
             return ruleLine.getRuleImplementations().get(implementationIndex);
         }
 

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public abstract class Line {
+public abstract class Line<T> {
     /*
        A line:
             has one or more implementations with different input requirements
