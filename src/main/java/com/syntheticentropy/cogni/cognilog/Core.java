@@ -27,7 +27,7 @@ public class Core<T> {
     CompiledQuery<T> currentQuery = null;
     boolean foundQuerySolution = false;
     List<RuleIterator> stack = new ArrayList<>();
-    Map<Integer, Symbol<?>> symbols = new HashMap<>();
+    List<Map<Integer, Symbol<?>>> symbolsStack = new ArrayList<>();
 
     public SolutionResult<T> findNextSolution() {
         if (!getProgram().isRunnable()) {
@@ -60,7 +60,8 @@ public class Core<T> {
 
             // Put the first iterator on the stack
             // When it is removed, the query is complete
-            stack.add(currentQuery.getRules().get(stack.size()).getImplementation().createRuleIterator(symbols));
+            symbolsStack.add(new HashMap<>());
+            stack.add(currentQuery.getRules().get(stack.size()).getImplementation().createRuleIterator(symbolsStack.get(symbolsStack.size()-1)));
         }
 
         int totalLimit = 100;
@@ -74,14 +75,17 @@ public class Core<T> {
             if (result.boundSymbols) {
                 if (stack.size() < currentQuery.getRules().size()) {
                     // put the next iterator on the stack!
-                    stack.add(currentQuery.getRules().get(stack.size()).getImplementation().createRuleIterator(symbols));
+                    // shallow clone the symbols's state
+                    symbolsStack.add(new HashMap<>(symbolsStack.get(symbolsStack.size()-1)));
+                    stack.add(currentQuery.getRules().get(stack.size()).getImplementation().createRuleIterator(symbolsStack.get(symbolsStack.size()-1)));
                 } else {
                     // or if none left, we've found a solution, so stop processing
                     foundSolution = true;
                     break;
                 }
             } else if (result.lastIteration) {
-                // remove this iterator from the stack
+                // remove this iterator from the stack, along with its symbols
+                symbolsStack.remove(symbolsStack.size()-1);
                 stack.remove(stack.size()-1);
 
                 // Empty stack? ignore the remainingLimit and stop processing
@@ -92,6 +96,8 @@ public class Core<T> {
                 assert remainingLimit <= 0;
             }
         }
+
+        assert stack.size() == symbolsStack.size();
 
         if (stack.isEmpty()) {
             // no solution, query has completed
@@ -105,7 +111,7 @@ public class Core<T> {
 
         // found a solution, query is ongoing
         List<T> results = currentQuery.getActions().stream()
-                .map(action -> action.createResult(symbols))
+                .map(action -> action.createResult(symbolsStack.get(symbolsStack.size()-1)))
                 .collect(Collectors.toList());
 //        currentQuery.getActions().stream()
 //                .map(action -> action.)
