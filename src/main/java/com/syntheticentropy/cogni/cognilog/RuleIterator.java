@@ -2,6 +2,7 @@ package com.syntheticentropy.cogni.cognilog;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 public abstract class RuleIterator {
     // created by a RuleImplementation at the time it is put onto the stack
@@ -9,9 +10,9 @@ public abstract class RuleIterator {
     // outputs: all symbols must have assigned values
     // return true if there is more results, false if no more results
 
-    public final List<Symbol<?>> symbols;
+    public final List<Optional<Symbol<Object>>> symbols;
 
-    public RuleIterator(List<Symbol<?>> symbols) {
+    public RuleIterator(List<Optional<Symbol<Object>>> symbols) {
         this.symbols = symbols;
     }
 

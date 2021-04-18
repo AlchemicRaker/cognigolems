@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,38 +36,41 @@ public class ProgramTest {
             can create a result from all the inputs
      */
 
-    private static Program getValidDummyProgram() {
-        return Program.compileProgram(Arrays.asList(new ActionLine(Arrays.asList(),Arrays.asList())));
+
+    public static <T> Program<T> getValidDummyProgram() {
+        return Program.compileProgram(Arrays.asList(new ActionLine<T>(Arrays.asList(),Arrays.asList())));
     }
 
-    private static Program getComplexProgram() {
-        ActionLine action = new ActionLine(
-                Arrays.asList(6),
-                Arrays.asList(1));
+    public static <T> Program<T> getComplexProgram(ActionLine<T> action) {
+//        ActionLine<T> action = new ActionLine<T>(
+//                Arrays.asList(6),
+//                Arrays.asList(1));
+//        action.createResult(Arrays.asList());
 
-        RuleLine constRule1 = new ConstantRuleLine(
+
+        RuleLine<T> constRule1 = new ConstantRuleLine<T>(
                 Arrays.asList(Optional.of(1), Optional.of(2), Optional.of(4)),
                 Arrays.asList(1, 1, 1),
-                Arrays.asList(5, 5, 5),
+                Arrays.asList(10, 20, 40),
                 200);
 
-        RuleLine constRule2 = new ConstantRuleLine(
+        RuleLine<T> constRule2 = new ConstantRuleLine<T>(
                 Arrays.asList(Optional.of(3)),
                 Arrays.asList(1),
-                Arrays.asList(5),
+                Arrays.asList(30),
                 150);
 
-        RuleLine constRule3 = new ConstantRuleLine(
+        RuleLine<T> constRule3 = new ConstantRuleLine<T>(
                 Arrays.asList(Optional.of(4)),
                 Arrays.asList(1),
-                Arrays.asList(5));
+                Arrays.asList(40));
 
-        RuleLine constRule4 = new ConstantRuleLine(
+        RuleLine<T> constRule4 = new ConstantRuleLine<T>(
                 Arrays.asList(Optional.of(5)),
                 Arrays.asList(1),
-                Arrays.asList(5));
+                Arrays.asList(50));
 
-        RuleImplementation rule5requireFirstTwo = new RuleImplementation() {
+        RuleImplementation<T> rule5requireFirstTwo = new RuleImplementation<T>() {
             @Override
             public int complexity() {
                 return 100;
@@ -78,11 +83,38 @@ public class ProgramTest {
 
             @Override
             public RuleIterator createRuleIterator(Map<Integer, Symbol<?>> symbols) {
-                return null;
+                List<Optional<Symbol<Object>>> args = Stream.of(Optional.of(3),Optional.of(4),Optional.of(6))
+                        .map(maybeArgIndex -> maybeArgIndex.map(index -> {
+                    if(!symbols.containsKey(index)) symbols.put(index, new Symbol<Object>(index));
+                    return (Symbol<Object>) symbols.get(index);
+                })).collect(Collectors.toList());
+
+                return new RuleIterator(args) {
+                    boolean firstRun = true;
+                    @Override
+                    public RuleIteratorResult next(int limit) {
+                        if (firstRun) {
+                            firstRun = false;
+                            List<Integer> values = Arrays.asList(30, 40, 60);
+                            assert values.size() == args.size();
+                            for (int i = 0; i < values.size(); i++){
+                                Optional<Symbol<Object>> arg = args.get(i);
+                                if(!arg.isPresent()) continue;
+                                Symbol<Object> s = arg.get();
+                                if(s.getValue().isPresent()) {
+                                    continue;
+                                }
+                                s.setValue(values.get(i));
+                            }
+                            return new RuleIteratorResult(true, false, 1);
+                        }
+                        return new RuleIteratorResult(false, true, 0);
+                    }
+                };
             }
         };
 
-        RuleImplementation rule5requireLast = new RuleImplementation() {
+        RuleImplementation<T> rule5requireLast = new RuleImplementation<T>() {
             @Override
             public int complexity() {
                 return 100;
@@ -95,11 +127,38 @@ public class ProgramTest {
 
             @Override
             public RuleIterator createRuleIterator(Map<Integer, Symbol<?>> symbols) {
-                return null;
+                List<Optional<Symbol<Object>>> args = Stream.of(Optional.of(3),Optional.of(4),Optional.of(6))
+                        .map(maybeArgIndex -> maybeArgIndex.map(index -> {
+                            if(!symbols.containsKey(index)) symbols.put(index, new Symbol<Object>(index));
+                            return (Symbol<Object>) symbols.get(index);
+                        })).collect(Collectors.toList());
+
+                return new RuleIterator(args) {
+                    boolean firstRun = true;
+                    @Override
+                    public RuleIteratorResult next(int limit) {
+                        if (firstRun) {
+                            firstRun = false;
+                            List<Integer> values = Arrays.asList(30, 40, 60);
+                            assert values.size() == args.size();
+                            for (int i = 0; i < values.size(); i++){
+                                Optional<Symbol<Object>> arg = args.get(i);
+                                if(!arg.isPresent()) continue;
+                                Symbol<Object> s = arg.get();
+                                if(s.getValue().isPresent()) {
+                                    continue;
+                                }
+                                s.setValue(values.get(i));
+                            }
+                            return new RuleIteratorResult(true, false, 1);
+                        }
+                        return new RuleIteratorResult(false, true, 0);
+                    }
+                };
             }
         };
 
-        RuleLine rule5 = new RuleLine(
+        RuleLine<T> rule5 = new RuleLine<T>(
                 Arrays.asList(Optional.of(3), Optional.of(4), Optional.of(6)),
                 Arrays.asList(5, 5, 5),
                 Arrays.asList(rule5requireLast, rule5requireFirstTwo)
@@ -108,22 +167,36 @@ public class ProgramTest {
         return Program.compileProgram(Arrays.asList(action, constRule1, constRule2, constRule3, constRule4, rule5));
     }
 
+    static class ActionLineString extends ActionLine<String> {
+
+        public ActionLineString() {
+            super(Arrays.asList(4, 6), Arrays.asList(1, 1));
+        }
+
+        public String createResult(List<Symbol<?>> symbols) {
+            return symbols.stream().map(symbol -> {
+                return "[" + symbol.getIndex() + "]=" + symbol.getValue().get();
+            }).collect(Collectors.joining(","));
+        }
+
+    }
+
     @Test
     void canMakeProgramFromLines() {
-        Program program = getComplexProgram();
+        Program<String> program = getComplexProgram(new ActionLineString());
         assertTrue(program.isRunnable());
         program.getQueries().forEach(query -> System.out.println(query.toDependencyString()));
     }
 
     @Test
     void programWithoutLinesIsInvalid() {
-        Program program = Program.compileProgram(Arrays.asList());
+        Program<Object> program = Program.compileProgram(Arrays.asList());
         assertFalse(program.isRunnable());
     }
 
     @Test
     void programWithoutActionsIsInvalid() {
-        Program program = Program.compileProgram(Arrays.asList(new RuleLine(Arrays.asList(),Arrays.asList(),Arrays.asList())));
+        Program<Object> program = Program.compileProgram(Arrays.asList(new RuleLine<Object>(Arrays.asList(),Arrays.asList(),Arrays.asList())));
         assertFalse(program.isRunnable());
     }
 

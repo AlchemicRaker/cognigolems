@@ -9,9 +9,9 @@ public class Core<T> {
 
      */
 
-    private final Program program;
+    private final Program<T> program;
 
-    public Core(Program program) {
+    public Core(Program<T> program) {
         this.program = program;
     }
 
@@ -31,7 +31,7 @@ public class Core<T> {
 
     public SolutionResult<T> findNextSolution() {
         if (!getProgram().isRunnable()) {
-            return new SolutionResult<T>(Optional.empty(), 0, true);
+            return new SolutionResult<>(null, 0, true);
         }
         // the stack is always valid, even if it is empty.
         // algorithm:
@@ -95,12 +95,12 @@ public class Core<T> {
 
         if (stack.isEmpty()) {
             // no solution, query has completed
-            return new SolutionResult<T>(Optional.empty(), totalLimit - remainingLimit, true);
+            return new SolutionResult<>(totalLimit - remainingLimit, true);
         }
 
         if (!foundSolution) {
             // no solution, query is ongoing
-            return new SolutionResult<T>(Optional.empty(), totalLimit - remainingLimit, false);
+            return new SolutionResult<>(totalLimit - remainingLimit, false);
         }
 
         // found a solution, query is ongoing
@@ -110,14 +110,19 @@ public class Core<T> {
 //        currentQuery.getActions().stream()
 //                .map(action -> action.)
 
-        return new SolutionResult<T>(Optional.of(results), 1, true);
+        return new SolutionResult<>(results, 1, true);
     }
 
     public static class SolutionResult<T> {
         private final boolean isEndOfSearch;
         private final int iterationsUsed;
-        private final Optional<List<T>> solution;
-        public SolutionResult(Optional<List<T>> solution, int iterationsUsed, boolean isEndOfSearch) {
+        private final List<T> solution;
+
+        public SolutionResult(int iterationsUsed, boolean isEndOfSearch) {
+            this(null, iterationsUsed, isEndOfSearch);
+        }
+
+        public SolutionResult(List<T> solution, int iterationsUsed, boolean isEndOfSearch) {
             this.isEndOfSearch = isEndOfSearch;
             this.iterationsUsed = iterationsUsed;
             this.solution = solution;
@@ -132,7 +137,7 @@ public class Core<T> {
         }
 
         public Optional<List<T>> getSolution() {
-            return solution;
+            return Optional.of(solution);
         }
     }
 }

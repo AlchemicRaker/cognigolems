@@ -136,7 +136,7 @@ public class CompiledQuery<T> {
             return ruleLine;
         }
 
-        public RuleImplementation getImplementation() {
+        public RuleImplementation<T> getImplementation() {
             return ruleLine.getRuleImplementations().get(implementationIndex);
         }
 

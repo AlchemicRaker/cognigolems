@@ -8,7 +8,7 @@ public class Symbol<T> {
     // it can have a bound value
 
     private final int index;
-    private Optional<T> value = Optional.empty();
+    private T value = null;
 
     public Symbol(int index) {
         this.index = index;
@@ -20,10 +20,10 @@ public class Symbol<T> {
     }
 
     public Optional<T> getValue() {
-        return value;
+        return Optional.ofNullable(value);
     }
 
-    public void setValue(Optional<T> value) {
+    public void setValue(T value) {
         this.value = value;
     }
 }
