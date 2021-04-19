@@ -60,14 +60,18 @@ public class Core<T> {
 
             // Put the first iterator on the stack
             // When it is removed, the query is complete
-            symbolsStack.add(new HashMap<>());
-            stack.add(currentQuery.getRules().get(stack.size()).getImplementation().createRuleIterator(symbolsStack.get(symbolsStack.size()-1)));
+            if(currentQuery.getRules().size() > 0){
+                symbolsStack.add(new HashMap<>());
+                stack.add(currentQuery.getRules().get(stack.size()).getImplementation().createRuleIterator(symbolsStack.get(symbolsStack.size()-1)));
+            }
         }
 
         int totalLimit = 100;
         int remainingLimit = totalLimit;
         boolean foundSolution = false;
         while (remainingLimit > 0) {
+            if(stack.size() == 0) break;
+
             RuleIterator ruleIterator = stack.get(stack.size()-1);
             RuleIterator.RuleIteratorResult result = ruleIterator.next(remainingLimit);
 
@@ -143,7 +147,7 @@ public class Core<T> {
         }
 
         public Optional<List<T>> getSolution() {
-            return Optional.of(solution);
+            return Optional.ofNullable(solution);
         }
     }
 }

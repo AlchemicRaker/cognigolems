@@ -1,9 +1,23 @@
 package com.syntheticentropy.cogni.forge.entity;
 
+import com.syntheticentropy.cogni.cognilog.*;
+import com.syntheticentropy.cogni.forge.action.MoveToCoordAction;
+import com.syntheticentropy.cogni.forge.action.SampleAction;
+import com.syntheticentropy.cogni.forge.entity.goal.MoveToGoal;
+import com.syntheticentropy.cogni.forge.rule.ConstantCoordinateListRule;
+import com.syntheticentropy.cogni.forge.rule.ConstantCoordinateRule;
+import com.syntheticentropy.cogni.forge.solution.SampleSolution;
+import com.syntheticentropy.cogni.forge.solution.Solution;
+import com.syntheticentropy.cogni.forge.symbol.BaseValue;
+import com.syntheticentropy.cogni.forge.symbol.CoordinateValue;
+import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
 import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.monster.CreeperEntity;
+import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.GolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
@@ -21,9 +35,9 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
-import java.util.OptionalInt;
+import java.util.*;
 
-public class CognigolemEntity extends GolemEntity implements IInventory {
+public class CognigolemEntity extends GolemEntity implements IInventory, ICogniEntity {
     private NonNullList<ItemStack> items = NonNullList.withSize(27, ItemStack.EMPTY);
     @Nullable
     private PlayerEntity interactingPlayer;
@@ -151,4 +165,97 @@ public class CognigolemEntity extends GolemEntity implements IInventory {
         InventoryHelper.dropContents(this.level, this, this);
     }
 
+
+    // Golems have a cognilog Core that recompiles any time the program changes
+    // and runs as long as the golem is not paused (when the inventory is open or when no core is present)
+    // TODO: all of the "code inventory" of the golem should be contained in an extractable "core" object
+    // TODO: when no core is present, the golem should not idle, it should appear entirely inert
+
+    private Core<Solution> core;
+    private List<Solution> solutions;
+
+    protected void initSampleCore() {
+        if(this.level.isClientSide) return;
+        CoordinateValue startingCoordinate = new CoordinateValue(this.getX(), this.getY(), this.getZ());
+//        CoordinateValue startingCoordinate = new CoordinateValue(this.getX()+5, this.getY(), this.getZ());
+        List<CoordinateValue> coordinateList = Arrays.asList(
+                new CoordinateValue(this.getX(), this.getY(), this.getZ()),
+                new CoordinateValue(this.getX()+5, this.getY(), this.getZ()),
+                new CoordinateValue(this.getX(), this.getY(), this.getZ()+5),
+                new CoordinateValue(this.getX()-5, this.getY(), this.getZ()),
+                new CoordinateValue(this.getX(), this.getY(), this.getZ()-5)
+        );
+        int coordinateSymbol = 1;
+
+        List<Line<Solution>> lines = Arrays.asList(
+                new MoveToCoordAction(coordinateSymbol),
+                new ConstantCoordinateListRule(coordinateSymbol, coordinateList)
+        );
+
+        Program<Solution> program = Program.compileProgram(lines);
+        this.core = new Core<>(program);
+        this.solutions = new ArrayList<>();
+    }
+
+    boolean firstTick = true;
+    int solutionCooldown = 0;
+
+    @Override
+    public void tick() {
+        super.tick();
+        if(!this.isAlive()) return;
+
+        if(firstTick) {
+            firstTick = false;
+            if(core == null) {
+                initSampleCore();
+            }
+        }
+
+        if(core == null || !core.isRunnable()) return;
+
+        if(solutionCooldown > 0) {
+            solutionCooldown--;
+            return;
+        }
+
+        // TODO: if there's queued solutions, execute those first
+        if(this.solutions.size() > 0) {
+            Solution topSolution = this.solutions.get(0);
+            boolean doneWithSolution = topSolution.tick(this);
+            if(doneWithSolution) {
+                this.solutions.remove(0);
+                solutionCooldown = 60;
+            }
+            return;
+        }
+
+        Core.SolutionResult<Solution> result = core.findNextSolution();
+        Optional<List<Solution>> maybeSolutions = result.getSolution();
+        if(!maybeSolutions.isPresent()) return;
+        List<Solution> solutions = maybeSolutions.get();
+
+        this.solutions.addAll(solutions);
+    }
+
+    private MoveToGoal moveToGoal;
+
+    @Override
+    public Optional<MoveToGoal> getMoveToGoal() {
+        return Optional.ofNullable(this.moveToGoal);
+    }
+
+    @Override
+    public Optional<CreatureEntity> getCreatureEntity() {
+        return Optional.of(this);
+    }
+
+    protected void registerGoals() {
+        // TODO: have no target selectors; all targets and goals will be controlled by Action solutions
+        this.moveToGoal = new MoveToGoal(this);
+        this.goalSelector.addGoal(1, this.moveToGoal);
+
+        this.goalSelector.addGoal(7, new LookAtGoal(this, PlayerEntity.class, 6.0F));
+        this.goalSelector.addGoal(8, new LookRandomlyGoal(this));
+    }
 }

@@ -22,10 +22,10 @@ public class Program<T> {
                 .collect(Collectors.toList());
 
         // No actions means no way to get solutions
-        if(actionLines.size() == 0) {
+        // No rules means no way to know when to activate actions
+        if(actionLines.size() == 0 || ruleLines.size() == 0) {
             return new Program<T>(Collections.emptyList(), false);
         }
-        // No rules is fine. Actions don't necessarily require rules to function.
 
         // TODO: add action grouping, so multiple actions must be matched and execute in sequence.
         final List<CompiledQuery<T>> queries = actionLines.stream()

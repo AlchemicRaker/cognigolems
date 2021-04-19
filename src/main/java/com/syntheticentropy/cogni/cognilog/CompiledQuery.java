@@ -92,6 +92,10 @@ public class CompiledQuery<T> {
 
         // All symbols found
         // All connected rules are compiled and ordered
+        // If there are no rules, then this is not a valid query
+        if (compiledRules.size() == 0) {
+            return Optional.empty();
+        }
 
         return Optional.of(new CompiledQuery<T>(actions, compiledRules));
     }
