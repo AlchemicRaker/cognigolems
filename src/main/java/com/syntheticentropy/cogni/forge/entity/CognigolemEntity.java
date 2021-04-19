@@ -27,6 +27,7 @@ import net.minecraft.inventory.container.ChestContainer;
 import net.minecraft.inventory.container.SimpleNamedContainerProvider;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
@@ -36,6 +37,7 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CognigolemEntity extends GolemEntity implements IInventory, ICogniEntity {
     private NonNullList<ItemStack> items = NonNullList.withSize(27, ItemStack.EMPTY);
@@ -55,12 +57,20 @@ public class CognigolemEntity extends GolemEntity implements IInventory, ICogniE
         super.load(compoundNBT);
         this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
         ItemStackHelper.loadAllItems(compoundNBT, this.items);
+        if(compoundNBT.contains("Solutions")) {
+            ListNBT solutionsListNBT = compoundNBT.getList("Solutions", 10);
+            solutions = solutionsListNBT.stream().map(s->(CompoundNBT)s).map(Solution::fromNBT).collect(Collectors.toList());
+        }
     }
 
     @Override
     public boolean save(CompoundNBT compoundNBT) {
         boolean b = super.save(compoundNBT);
         ItemStackHelper.saveAllItems(compoundNBT, this.items);
+        List<CompoundNBT> solutionsList = solutions.stream().map(Solution::toNBT).collect(Collectors.toList());
+        ListNBT solutionsListNBT = new ListNBT();
+        solutionsListNBT.addAll(solutionsList);
+        compoundNBT.put("Solutions", solutionsListNBT);
         return b;
     }
 
@@ -194,7 +204,9 @@ public class CognigolemEntity extends GolemEntity implements IInventory, ICogniE
 
         Program<Solution> program = Program.compileProgram(lines);
         this.core = new Core<>(program);
-        this.solutions = new ArrayList<>();
+        if(this.solutions == null) {
+            this.solutions = new ArrayList<>();
+        }
     }
 
     boolean firstTick = true;
