@@ -89,16 +89,23 @@ public class MoveItemSolution extends Solution {
                     .orElseGet(LazyOptional::empty)
                     .resolve().orElse(null);
 
-            ItemStack remainingItemStack = injectItem(itemHandler, heldItem);
+            if(itemHandler != null) {
+                ItemStack remainingItemStack = injectItem(itemHandler, heldItem);
 
-            // drop whatever doesn't fit in the destination
-            if(!remainingItemStack.isEmpty()) {
-                creatureEntity.spawnAtLocation(remainingItemStack);
+                // drop whatever doesn't fit in the destination
+                if(!remainingItemStack.isEmpty()) {
+                    creatureEntity.spawnAtLocation(remainingItemStack);
+                }
+
+                entity.setHeldItem(ItemStack.EMPTY);
+
+                return true; //either way, all done
             }
 
+            // no target inventory, drop at destination
+            creatureEntity.spawnAtLocation(heldItem); // drop the item
             entity.setHeldItem(ItemStack.EMPTY);
-
-            return true; //either way, all done
+            return true;
         }
 
         // if there's no held item, time to go get an item
