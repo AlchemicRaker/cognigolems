@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 
 public class CognigolemEntity extends GolemEntity implements IInventory, ICogniEntity {
     private NonNullList<ItemStack> items = NonNullList.withSize(27, ItemStack.EMPTY);
+    private ItemStack heldItem = ItemStack.EMPTY;
     @Nullable
     private PlayerEntity interactingPlayer;
 
@@ -277,5 +278,14 @@ public class CognigolemEntity extends GolemEntity implements IInventory, ICogniE
 
         this.goalSelector.addGoal(7, new LookAtGoal(this, PlayerEntity.class, 6.0F));
         this.goalSelector.addGoal(8, new LookRandomlyGoal(this));
+    }
+
+    public Optional<ItemStack> getHeldItem() {
+        return Optional.of(heldItem);
+    }
+
+    public boolean setHeldItem(ItemStack heldItem) {
+        this.heldItem = heldItem;
+        return true;
     }
 }

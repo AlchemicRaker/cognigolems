@@ -27,11 +27,11 @@ public class CoreTest {
         Core<Object> core = new Core<Object>(ProgramTest.getValidDummyProgram());
     }
 
-    @Test
-    void canBeRunnable() {
-        Core<Object> core = new Core<Object>(ProgramTest.getValidDummyProgram());
-        assertTrue(core.isRunnable());
-    }
+//    @Test
+//    void canBeRunnable() {
+//        Core<Object> core = new Core<Object>(ProgramTest.getValidDummyProgram());
+//        assertTrue(core.isRunnable());
+//    }
 
     @Test
     void canHaveAProgram() {

@@ -22,7 +22,7 @@ public class MoveToCoordAction extends ActionLine<Solution> {
         assert symbols.size() == 1;
         Symbol<?> arg0 = symbols.get(0);
         assert arg0.getValue().isPresent();
-        Optional<CoordinateValue> coordinateValue = symbols.get(0).getValue()
+        Optional<CoordinateValue> coordinateValue = arg0.getValue()
                 .map(v -> (BaseValue)v).map(BaseValue::getCoordinateValue);
         assert coordinateValue.isPresent();
         return new MoveToCoordSolution(coordinateValue.get());
