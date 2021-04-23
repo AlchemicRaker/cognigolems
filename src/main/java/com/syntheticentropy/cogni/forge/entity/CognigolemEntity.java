@@ -4,12 +4,16 @@ import com.syntheticentropy.cogni.cognilog.*;
 import com.syntheticentropy.cogni.forge.action.MoveToCoordAction;
 import com.syntheticentropy.cogni.forge.action.SampleAction;
 import com.syntheticentropy.cogni.forge.entity.goal.MoveToGoal;
+import com.syntheticentropy.cogni.forge.rule.ConstantBlockTypeRule;
 import com.syntheticentropy.cogni.forge.rule.ConstantCoordinateListRule;
 import com.syntheticentropy.cogni.forge.rule.ConstantCoordinateRule;
+import com.syntheticentropy.cogni.forge.rule.NearbyBlockRule;
 import com.syntheticentropy.cogni.forge.solution.SampleSolution;
 import com.syntheticentropy.cogni.forge.solution.Solution;
 import com.syntheticentropy.cogni.forge.symbol.BaseValue;
+import com.syntheticentropy.cogni.forge.symbol.BlockTypeValue;
 import com.syntheticentropy.cogni.forge.symbol.CoordinateValue;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
@@ -195,11 +199,15 @@ public class CognigolemEntity extends GolemEntity implements IInventory, ICogniE
                 new CoordinateValue(this.getX()-5, this.getY(), this.getZ()),
                 new CoordinateValue(this.getX(), this.getY(), this.getZ()-5)
         );
-        int coordinateSymbol = 1;
+        int blockTypeSymbol = 1;
+        int coordinateSymbol = 2;
 
         List<Line<Solution>> lines = Arrays.asList(
                 new MoveToCoordAction(coordinateSymbol),
-                new ConstantCoordinateListRule(coordinateSymbol, coordinateList)
+                new NearbyBlockRule(this,
+                        Arrays.asList(Optional.of(blockTypeSymbol), Optional.of(coordinateSymbol)),
+                        Arrays.asList(BaseValue.Type.BlockType.ordinal(), BaseValue.Type.Coordinate.ordinal())),
+                new ConstantBlockTypeRule(blockTypeSymbol, new BlockTypeValue(Blocks.CRAFTING_TABLE))
         );
 
         Program<Solution> program = Program.compileProgram(lines);

@@ -1,12 +1,14 @@
 package com.syntheticentropy.cogni.forge.symbol;
 
 import com.syntheticentropy.cogni.cognilog.Symbol;
+import net.minecraft.block.Blocks;
 
 import java.util.Optional;
 
 public abstract class BaseValue {
     public enum Type {
-        Coordinate
+        Coordinate,
+        BlockType
     }
     private final int typeIndex;
     public BaseValue(Type type) {
@@ -23,5 +25,13 @@ public abstract class BaseValue {
 
     public CoordinateValue getCoordinateValue() {
         return (CoordinateValue) this;
+    }
+
+    public boolean isBlockType() {
+        return this.typeIndex == Type.BlockType.ordinal();
+    }
+
+    public BlockTypeValue getBlockTypeValue() {
+        return (BlockTypeValue) this;
     }
 }
