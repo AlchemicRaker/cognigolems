@@ -1,6 +1,7 @@
 package com.syntheticentropy.cogni.forge.entity;
 
 import com.syntheticentropy.cogni.cognilog.*;
+import com.syntheticentropy.cogni.forge.action.MoveItemAction;
 import com.syntheticentropy.cogni.forge.action.MoveToCoordAction;
 import com.syntheticentropy.cogni.forge.action.SampleAction;
 import com.syntheticentropy.cogni.forge.entity.goal.MoveToGoal;
@@ -64,7 +65,8 @@ public class CognigolemEntity extends GolemEntity implements IInventory, ICogniE
         ItemStackHelper.loadAllItems(compoundNBT, this.items);
         if(compoundNBT.contains("Solutions")) {
             ListNBT solutionsListNBT = compoundNBT.getList("Solutions", 10);
-            solutions = solutionsListNBT.stream().map(s->(CompoundNBT)s).map(Solution::fromNBT).collect(Collectors.toList());
+            solutions = solutionsListNBT.stream().map(s->(CompoundNBT)s).map(Solution::fromNBT)
+                        .filter(Objects::nonNull).collect(Collectors.toList());
         }
     }
 
@@ -191,24 +193,39 @@ public class CognigolemEntity extends GolemEntity implements IInventory, ICogniE
 
     protected void initSampleCore() {
         if(this.level.isClientSide) return;
-        CoordinateValue startingCoordinate = new CoordinateValue(this.getX(), this.getY(), this.getZ());
-//        CoordinateValue startingCoordinate = new CoordinateValue(this.getX()+5, this.getY(), this.getZ());
-        List<CoordinateValue> coordinateList = Arrays.asList(
-                new CoordinateValue(this.getX(), this.getY(), this.getZ()),
-                new CoordinateValue(this.getX()+5, this.getY(), this.getZ()),
-                new CoordinateValue(this.getX(), this.getY(), this.getZ()+5),
-                new CoordinateValue(this.getX()-5, this.getY(), this.getZ()),
-                new CoordinateValue(this.getX(), this.getY(), this.getZ()-5)
-        );
-        int blockTypeSymbol = 1;
-        int coordinateSymbol = 2;
+//        CoordinateValue startingCoordinate = new CoordinateValue(this.getX(), this.getY(), this.getZ());
+////        CoordinateValue startingCoordinate = new CoordinateValue(this.getX()+5, this.getY(), this.getZ());
+//        List<CoordinateValue> coordinateList = Arrays.asList(
+//                new CoordinateValue(this.getX(), this.getY(), this.getZ()),
+//                new CoordinateValue(this.getX()+5, this.getY(), this.getZ()),
+//                new CoordinateValue(this.getX(), this.getY(), this.getZ()+5),
+//                new CoordinateValue(this.getX()-5, this.getY(), this.getZ()),
+//                new CoordinateValue(this.getX(), this.getY(), this.getZ()-5)
+//        );
+//        int blockTypeSymbol = 1;
+//        int coordinateSymbol = 2;
+//
+//        List<Line<Solution>> lines = Arrays.asList(
+//                new MoveToCoordAction(coordinateSymbol),
+//                new NearbyBlockRule(this,
+//                        Arrays.asList(Optional.of(blockTypeSymbol), Optional.of(coordinateSymbol)),
+//                        Arrays.asList(BaseValue.Type.BlockType.ordinal(), BaseValue.Type.Coordinate.ordinal())),
+//                new ConstantBlockTypeRule(blockTypeSymbol, new BlockTypeValue(Blocks.CRAFTING_TABLE))
+//        );
+
+        int fromCoordSymbol = 1;
+        int toCoordSymbol = 2;
+        int fromBlockSymbol = 3;
+        int toBlockSymbol = 4;
 
         List<Line<Solution>> lines = Arrays.asList(
-                new MoveToCoordAction(coordinateSymbol),
-                new NearbyBlockRule(this,
-                        Arrays.asList(Optional.of(blockTypeSymbol), Optional.of(coordinateSymbol)),
-                        Arrays.asList(BaseValue.Type.BlockType.ordinal(), BaseValue.Type.Coordinate.ordinal())),
-                new ConstantBlockTypeRule(blockTypeSymbol, new BlockTypeValue(Blocks.CRAFTING_TABLE))
+                new MoveItemAction(fromCoordSymbol, toCoordSymbol),
+
+                new NearbyBlockRule(this, fromBlockSymbol, fromCoordSymbol),
+                new ConstantBlockTypeRule(fromBlockSymbol, new BlockTypeValue(Blocks.TRAPPED_CHEST)),
+
+                new NearbyBlockRule(this, toBlockSymbol, toCoordSymbol),
+                new ConstantBlockTypeRule(toBlockSymbol, new BlockTypeValue(Blocks.CHEST))
         );
 
         Program<Solution> program = Program.compileProgram(lines);

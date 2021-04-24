@@ -18,6 +18,9 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class NearbyBlockRule extends RuleLine<Solution> {
+    public NearbyBlockRule(ICogniEntity entity, Integer blockTypeSymbol, Integer coordinateSymbol) {
+        this(entity, Arrays.asList(Optional.of(blockTypeSymbol), Optional.of(coordinateSymbol)), Arrays.asList(BaseValue.Type.BlockType.ordinal(), BaseValue.Type.Coordinate.ordinal()));
+    }
     public NearbyBlockRule(ICogniEntity entity, List<Optional<Integer>> argumentSymbols, List<Integer> argumentTypes) {
         super(argumentSymbols, argumentTypes, Arrays.asList(
                 new NearbyBlockTypeToCoordinatesImplementation(entity, argumentSymbols)));

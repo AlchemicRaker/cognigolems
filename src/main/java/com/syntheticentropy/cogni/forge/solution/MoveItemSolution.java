@@ -8,6 +8,7 @@ import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.passive.ChickenEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -63,11 +64,22 @@ public class MoveItemSolution extends Solution {
 
         CreatureEntity creatureEntity = entity.getCreatureEntity().get();
 
+        // if stuck unable to reach a target, abort
+        if(creatureEntity.getNavigation().isStuck()) {
+            creatureEntity.getNavigation().stop();
+            if(entity.getHeldItem().isPresent()) {
+                ItemStack heldItem = entity.getHeldItem().get();
+                creatureEntity.spawnAtLocation(heldItem); // drop the item
+                entity.setHeldItem(ItemStack.EMPTY);
+            }
+            return true;
+        }
+
         // if there's a held item, time to go put the item
         // reaching the destination and not being able to put it, drop it and abort
-        if(entity.getHeldItem().get().isEmpty()) {
+        if(!entity.getHeldItem().get().isEmpty()) {
             ItemStack heldItem = entity.getHeldItem().get();
-            double dist = creatureEntity.distanceToSqr(toX, toY, toZ);
+            double dist = creatureEntity.distanceToSqr(toX+0.5, toY+0.5, toZ+0.5);
             if(dist > 1) {
                 // need to be able to move
                 if(!entity.getMoveToGoal().isPresent()){
@@ -76,13 +88,13 @@ public class MoveItemSolution extends Solution {
                     return true;
                 }
                 MoveToGoal moveToGoal = entity.getMoveToGoal().get();
-                moveToGoal.activate(toX, toY, toZ, 1);
+                moveToGoal.activate(toX, toY+0.5, toZ, 1);
                 return false;
             }
 //            ChickenEntity
             //TODO: put item into that inventory
 
-            IItemHandler itemHandler = Optional.ofNullable(creatureEntity.level.getBlockEntity(new BlockPos(fromX, fromY, fromZ)))
+            IItemHandler itemHandler = Optional.ofNullable(creatureEntity.level.getBlockEntity(new BlockPos(toX, toY, toZ)))
                     .map(value -> this.fromSide != null
                             ? value.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, this.fromSide)
                             : value.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY))
@@ -111,14 +123,14 @@ public class MoveItemSolution extends Solution {
         // if there's no held item, time to go get an item
         // reaching the destination and not getting the item aborts
 
-        double dist = creatureEntity.distanceToSqr(fromX, fromY, fromZ);
+        double dist = creatureEntity.distanceToSqr(fromX+0.5, fromY+0.5, fromZ+0.5);
         if(dist > 1) {
             // need to be able to move
             if(!entity.getMoveToGoal().isPresent()){
                 return true;
             }
             MoveToGoal moveToGoal = entity.getMoveToGoal().get();
-            moveToGoal.activate(fromX, fromY, fromZ, 1);
+            moveToGoal.activate(fromX, fromY+0.5, fromZ, 1);
             return false;
         }
 
@@ -142,7 +154,9 @@ public class MoveItemSolution extends Solution {
 //        ItemEntity
 //        creatureEntity.level.g(ItemEntity.class,)
 
-        return false;
+
+        // Nothing to take or pick up, abort
+        return true;
     }
 
     // returns remaining held
@@ -172,5 +186,44 @@ public class MoveItemSolution extends Solution {
             }
         }
         return ItemStack.EMPTY;
+    }
+
+    @Override
+    public void load(CompoundNBT compoundNBT) {
+        super.load(compoundNBT);
+
+        this.fromX = compoundNBT.contains("fx") ? compoundNBT.getDouble("fx") : 0;
+        this.fromY = compoundNBT.contains("fy") ? compoundNBT.getDouble("fy") : 0;
+        this.fromZ = compoundNBT.contains("fz") ? compoundNBT.getDouble("fz") : 0;
+        this.fromSide = compoundNBT.contains("fside") ? Direction.valueOf(compoundNBT.getString("fside")) : null;
+        this.fromSlot = compoundNBT.contains("fslot") ? compoundNBT.getInt("fslot") : null;
+
+        this.toX = compoundNBT.contains("tx") ? compoundNBT.getDouble("tx") : 0;
+        this.toY = compoundNBT.contains("ty") ? compoundNBT.getDouble("ty") : 0;
+        this.toZ = compoundNBT.contains("tz") ? compoundNBT.getDouble("tz") : 0;
+        this.toSide = compoundNBT.contains("tside") ? Direction.valueOf(compoundNBT.getString("tside")) : null;
+        this.toSlot = compoundNBT.contains("tslot") ? compoundNBT.getInt("tslot") : null;
+    }
+
+    @Override
+    public boolean save(CompoundNBT compoundNBT) {
+        boolean b = super.save(compoundNBT);
+
+        compoundNBT.putDouble("fx", this.fromX);
+        compoundNBT.putDouble("fy", this.fromY);
+        compoundNBT.putDouble("fz", this.fromZ);
+        if(this.fromSide != null)
+            compoundNBT.putString("fside", this.fromSide.name());
+        if(this.fromSlot != null)
+            compoundNBT.putInt("fslot", this.fromSlot);
+
+        compoundNBT.putDouble("tx", this.toX);
+        compoundNBT.putDouble("ty", this.toY);
+        compoundNBT.putDouble("tz", this.toZ);
+        if(this.toSide != null)
+            compoundNBT.putString("tside", this.toSide.name());
+        if(this.toSlot != null)
+            compoundNBT.putInt("tslot", this.toSlot);
+        return b;
     }
 }
