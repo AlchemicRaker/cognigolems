@@ -161,6 +161,7 @@ public class NearbyBlockRule extends RuleLine<Solution> {
                     if(firstRun){
                         firstRun = false;
                     }
+                    //TODO: this is incomplete
                     return new RuleIteratorResult(false, true, 1);
                 }
             };

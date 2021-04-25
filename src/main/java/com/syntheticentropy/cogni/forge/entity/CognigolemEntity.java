@@ -5,15 +5,13 @@ import com.syntheticentropy.cogni.forge.action.MoveItemAction;
 import com.syntheticentropy.cogni.forge.action.MoveToCoordAction;
 import com.syntheticentropy.cogni.forge.action.SampleAction;
 import com.syntheticentropy.cogni.forge.entity.goal.MoveToGoal;
-import com.syntheticentropy.cogni.forge.rule.ConstantBlockTypeRule;
-import com.syntheticentropy.cogni.forge.rule.ConstantCoordinateListRule;
-import com.syntheticentropy.cogni.forge.rule.ConstantCoordinateRule;
-import com.syntheticentropy.cogni.forge.rule.NearbyBlockRule;
+import com.syntheticentropy.cogni.forge.rule.*;
 import com.syntheticentropy.cogni.forge.solution.SampleSolution;
 import com.syntheticentropy.cogni.forge.solution.Solution;
 import com.syntheticentropy.cogni.forge.symbol.BaseValue;
 import com.syntheticentropy.cogni.forge.symbol.BlockTypeValue;
 import com.syntheticentropy.cogni.forge.symbol.CoordinateValue;
+import com.syntheticentropy.cogni.forge.symbol.ItemTypeValue;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.EntityType;
@@ -31,6 +29,7 @@ import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.container.ChestContainer;
 import net.minecraft.inventory.container.SimpleNamedContainerProvider;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.ActionResultType;
@@ -217,16 +216,21 @@ public class CognigolemEntity extends GolemEntity implements IInventory, ICogniE
         int toCoordSymbol = 2;
         int fromBlockSymbol = 3;
         int toBlockSymbol = 4;
+        int fromItemTypeSymbol = 5;
+        int fromItemSlotSymbol = 6;
 
         List<Line<Solution>> lines = Arrays.asList(
-                new MoveItemAction(fromCoordSymbol, toCoordSymbol),
+                new MoveItemAction(fromItemSlotSymbol, toCoordSymbol),
 
                 new NearbyBlockRule(this, fromBlockSymbol, fromCoordSymbol),
                 new ConstantBlockTypeRule(fromBlockSymbol, new BlockTypeValue(Blocks.TRAPPED_CHEST)),
-                new ConstantCoordinateRule(fromCoordSymbol, new CoordinateValue(74, 63, -255)),
+//                new ConstantCoordinateRule(fromCoordSymbol, new CoordinateValue(74, 63, -255)),
 
                 new NearbyBlockRule(this, toBlockSymbol, toCoordSymbol),
-                new ConstantBlockTypeRule(toBlockSymbol, new BlockTypeValue(Blocks.CHEST))
+                new ConstantBlockTypeRule(toBlockSymbol, new BlockTypeValue(Blocks.CHEST)),
+
+                new InventoryRule(this, fromCoordSymbol, fromItemSlotSymbol, fromItemTypeSymbol),
+                new ConstantItemTypeRule(fromItemTypeSymbol, new ItemTypeValue(Items.STICK))
         );
 
         Program<Solution> program = Program.compileProgram(lines);
