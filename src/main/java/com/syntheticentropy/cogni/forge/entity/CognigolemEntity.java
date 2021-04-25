@@ -223,6 +223,7 @@ public class CognigolemEntity extends GolemEntity implements IInventory, ICogniE
 
                 new NearbyBlockRule(this, fromBlockSymbol, fromCoordSymbol),
                 new ConstantBlockTypeRule(fromBlockSymbol, new BlockTypeValue(Blocks.TRAPPED_CHEST)),
+                new ConstantCoordinateRule(fromCoordSymbol, new CoordinateValue(74, 63, -255)),
 
                 new NearbyBlockRule(this, toBlockSymbol, toCoordSymbol),
                 new ConstantBlockTypeRule(toBlockSymbol, new BlockTypeValue(Blocks.CHEST))

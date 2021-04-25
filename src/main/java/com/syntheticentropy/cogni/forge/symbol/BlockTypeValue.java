@@ -13,4 +13,11 @@ public class BlockTypeValue extends BaseValue {
     public Block getBlockType() {
         return blockType;
     }
+
+    public boolean equalsValue(BaseValue b) {
+        BlockTypeValue ba = this;
+        if(!super.equalsValue(b)) return false;
+        BlockTypeValue bb = (BlockTypeValue) b;
+        return  ba.blockType == bb.blockType;
+    }
 }

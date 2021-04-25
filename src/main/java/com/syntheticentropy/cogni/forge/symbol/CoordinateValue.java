@@ -46,4 +46,17 @@ public class CoordinateValue extends BaseValue {
     public Integer getSlot() {
         return slot;
     }
+
+    public boolean equalsValue(BaseValue b) {
+        CoordinateValue ca = this;
+        if(!super.equalsValue(b)) return false;
+        CoordinateValue cb = (CoordinateValue) b;
+        return  ca.x == cb.x &&
+                ca.y == cb.y &&
+                ca.z == cb.z &&
+                ca.side == cb.side &&
+                ((ca.slot == null && cb.slot == null) ||
+                 (ca.slot != null && cb.slot != null &&
+                         ca.slot.equals(cb.slot)));
+    }
 }

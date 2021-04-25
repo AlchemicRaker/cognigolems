@@ -61,6 +61,7 @@ public class NearbyBlockRule extends RuleLine<Solution> {
             }
             Symbol<Object> arg1 = (Symbol<Object>) symbols.get(argumentSymbols.get(1).get());
             Symbol<CoordinateValue> coordArgumentSymbol = (Symbol<CoordinateValue>) symbols.get(argumentSymbols.get(1).get());
+            Optional<CoordinateValue> filterCoordinateValue = coordArgumentSymbol.getValue();
 
             List<CoordinateValue> coordinateValues = findBlockCoordinates(blockTypeValue.getBlockType());
 
@@ -68,12 +69,18 @@ public class NearbyBlockRule extends RuleLine<Solution> {
                 private int counter = 0;
                 @Override
                 public RuleIteratorResult next(int limit) {
-                    if(counter >= coordinateValues.size()) {
-                        return new RuleIteratorResult(false, true, 1);
+                    while(counter < coordinateValues.size()) {
+                        CoordinateValue nextCoordinateValue = coordinateValues.get(counter);
+                        if(filterCoordinateValue.isPresent() &&
+                                !filterCoordinateValue.get().equalsValue(nextCoordinateValue)) {
+                            counter++;
+                            continue;
+                        }
+                        this.symbols.get(1).get().setValue(nextCoordinateValue);
+                        counter++;
+                        return new RuleIteratorResult(true, false, 1);
                     }
-                    this.symbols.get(1).get().setValue(coordinateValues.get(counter));
-                    counter++;
-                    return new RuleIteratorResult(true, false, 1);
+                    return new RuleIteratorResult(false, true, 1);
                 }
             };
         }

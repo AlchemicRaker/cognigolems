@@ -8,7 +8,8 @@ import java.util.Optional;
 public abstract class BaseValue {
     public enum Type {
         Coordinate,
-        BlockType
+        BlockType,
+        ItemType
     }
     private final int typeIndex;
     public BaseValue(Type type) {
@@ -33,5 +34,10 @@ public abstract class BaseValue {
 
     public BlockTypeValue getBlockTypeValue() {
         return (BlockTypeValue) this;
+    }
+
+    public boolean equalsValue(BaseValue b) {
+        BaseValue a = this;
+        return a.typeIndex == b.typeIndex;
     }
 }
