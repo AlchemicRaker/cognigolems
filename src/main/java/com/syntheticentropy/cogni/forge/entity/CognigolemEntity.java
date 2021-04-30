@@ -8,10 +8,7 @@ import com.syntheticentropy.cogni.forge.entity.goal.MoveToGoal;
 import com.syntheticentropy.cogni.forge.rule.*;
 import com.syntheticentropy.cogni.forge.solution.SampleSolution;
 import com.syntheticentropy.cogni.forge.solution.Solution;
-import com.syntheticentropy.cogni.forge.symbol.BaseValue;
-import com.syntheticentropy.cogni.forge.symbol.BlockTypeValue;
-import com.syntheticentropy.cogni.forge.symbol.CoordinateValue;
-import com.syntheticentropy.cogni.forge.symbol.ItemTypeValue;
+import com.syntheticentropy.cogni.forge.symbol.*;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.EntityType;
@@ -192,45 +189,44 @@ public class CognigolemEntity extends GolemEntity implements IInventory, ICogniE
 
     protected void initSampleCore() {
         if(this.level.isClientSide) return;
-//        CoordinateValue startingCoordinate = new CoordinateValue(this.getX(), this.getY(), this.getZ());
-////        CoordinateValue startingCoordinate = new CoordinateValue(this.getX()+5, this.getY(), this.getZ());
-//        List<CoordinateValue> coordinateList = Arrays.asList(
-//                new CoordinateValue(this.getX(), this.getY(), this.getZ()),
-//                new CoordinateValue(this.getX()+5, this.getY(), this.getZ()),
-//                new CoordinateValue(this.getX(), this.getY(), this.getZ()+5),
-//                new CoordinateValue(this.getX()-5, this.getY(), this.getZ()),
-//                new CoordinateValue(this.getX(), this.getY(), this.getZ()-5)
-//        );
-//        int blockTypeSymbol = 1;
-//        int coordinateSymbol = 2;
+
+//        int fromCoordSymbol = 1;
+//        int toCoordSymbol = 2;
+//        int fromBlockSymbol = 3;
+//        int toBlockSymbol = 4;
+//        int fromItemTypeSymbol = 5;
+//        int fromItemSlotSymbol = 6;
 //
 //        List<Line<Solution>> lines = Arrays.asList(
-//                new MoveToCoordAction(coordinateSymbol),
-//                new NearbyBlockRule(this,
-//                        Arrays.asList(Optional.of(blockTypeSymbol), Optional.of(coordinateSymbol)),
-//                        Arrays.asList(BaseValue.Type.BlockType.ordinal(), BaseValue.Type.Coordinate.ordinal())),
-//                new ConstantBlockTypeRule(blockTypeSymbol, new BlockTypeValue(Blocks.CRAFTING_TABLE))
+//                new MoveItemAction(fromItemSlotSymbol, toCoordSymbol),
+//
+//                new NearbyBlockRule(this, fromBlockSymbol, fromCoordSymbol),
+//                new ConstantBlockTypeRule(fromBlockSymbol, new BlockTypeValue(Blocks.TRAPPED_CHEST)),
+//
+//                new NearbyBlockRule(this, toBlockSymbol, toCoordSymbol),
+//                new ConstantBlockTypeRule(toBlockSymbol, new BlockTypeValue(Blocks.CHEST)),
+//
+//                new InventoryRule(this, fromCoordSymbol, fromItemSlotSymbol, fromItemTypeSymbol),
+//                new ConstantItemTypeRule(fromItemTypeSymbol, new ItemTypeValue(Items.STICK))
 //        );
 
-        int fromCoordSymbol = 1;
-        int toCoordSymbol = 2;
-        int fromBlockSymbol = 3;
-        int toBlockSymbol = 4;
-        int fromItemTypeSymbol = 5;
-        int fromItemSlotSymbol = 6;
+        int fromTextSymbol = 1;
+        int toTextSymbol = 2;
+        int fromCoordSymbol = 3;
+        int fromSlotSymbol = 4;
+        int toCoordSymbol = 5;
+        int itemTypeSymbol = 6;
 
         List<Line<Solution>> lines = Arrays.asList(
-                new MoveItemAction(fromItemSlotSymbol, toCoordSymbol),
+                new MoveItemAction(fromSlotSymbol, toCoordSymbol),
 
-                new NearbyBlockRule(this, fromBlockSymbol, fromCoordSymbol),
-                new ConstantBlockTypeRule(fromBlockSymbol, new BlockTypeValue(Blocks.TRAPPED_CHEST)),
-//                new ConstantCoordinateRule(fromCoordSymbol, new CoordinateValue(74, 63, -255)),
+                new NearbySignRule(this, fromTextSymbol, null, fromCoordSymbol),
+                new InventoryRule(this, fromCoordSymbol, fromSlotSymbol, itemTypeSymbol),
+                new ConstantTextRule(fromTextSymbol, new TextValue("dump")),
 
-                new NearbyBlockRule(this, toBlockSymbol, toCoordSymbol),
-                new ConstantBlockTypeRule(toBlockSymbol, new BlockTypeValue(Blocks.CHEST)),
-
-                new InventoryRule(this, fromCoordSymbol, fromItemSlotSymbol, fromItemTypeSymbol),
-                new ConstantItemTypeRule(fromItemTypeSymbol, new ItemTypeValue(Items.STICK))
+                new NearbySignRule(this, toTextSymbol, null, toCoordSymbol),
+                new InventoryRule(this, toCoordSymbol, null, itemTypeSymbol),
+                new ConstantTextRule(toTextSymbol, new TextValue("storage"))
         );
 
         Program<Solution> program = Program.compileProgram(lines);

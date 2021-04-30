@@ -1,6 +1,7 @@
 package com.syntheticentropy.cogni.forge.symbol;
 
 import net.minecraft.util.Direction;
+import net.minecraft.util.math.BlockPos;
 
 public class CoordinateValue extends BaseValue {
     private final double x;
@@ -25,6 +26,14 @@ public class CoordinateValue extends BaseValue {
 
     public CoordinateValue(double x, double y, double z) {
         this(x, y, z, null);
+    }
+
+    public CoordinateValue(BlockPos blockPos) {
+        this(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+    }
+
+    public CoordinateValue(BlockPos blockPos, Direction side) {
+        this(blockPos.getX(), blockPos.getY(), blockPos.getZ(), side);
     }
 
     public double getX() {

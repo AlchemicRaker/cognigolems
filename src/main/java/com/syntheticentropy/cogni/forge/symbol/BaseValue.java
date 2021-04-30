@@ -9,7 +9,8 @@ public abstract class BaseValue {
     public enum Type {
         Coordinate,
         BlockType,
-        ItemType
+        ItemType,
+        Text
     }
     private final int typeIndex;
     public BaseValue(Type type) {

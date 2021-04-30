@@ -23,6 +23,7 @@ public class NearbyBlockRule extends RuleLine<Solution> {
     }
     public NearbyBlockRule(ICogniEntity entity, List<Optional<Integer>> argumentSymbols, List<Integer> argumentTypes) {
         super(argumentSymbols, argumentTypes, Arrays.asList(
+//                new NearbyBlockCoordinateToTypeImplementation(entity, argumentSymbols),
                 new NearbyBlockTypeToCoordinatesImplementation(entity, argumentSymbols)));
     }
     // NearbyBlockRule([Block Type], Coordinate)

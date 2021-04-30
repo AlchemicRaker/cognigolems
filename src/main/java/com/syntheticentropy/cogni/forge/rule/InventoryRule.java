@@ -6,10 +6,7 @@ import com.syntheticentropy.cogni.cognilog.RuleLine;
 import com.syntheticentropy.cogni.cognilog.Symbol;
 import com.syntheticentropy.cogni.forge.entity.ICogniEntity;
 import com.syntheticentropy.cogni.forge.solution.Solution;
-import com.syntheticentropy.cogni.forge.symbol.BaseValue;
-import com.syntheticentropy.cogni.forge.symbol.BlockTypeValue;
-import com.syntheticentropy.cogni.forge.symbol.CoordinateValue;
-import com.syntheticentropy.cogni.forge.symbol.ItemTypeValue;
+import com.syntheticentropy.cogni.forge.symbol.*;
 import net.minecraft.block.Block;
 import net.minecraft.entity.CreatureEntity;
 import net.minecraft.item.Item;
@@ -25,7 +22,7 @@ import java.util.*;
 public class InventoryRule extends RuleLine<Solution> {
 
     public InventoryRule(ICogniEntity entity, Integer inventoryCoordinateSymbol, Integer slotSymbol, Integer itemTypeSymbol) {
-        this(entity, Arrays.asList(Optional.of(inventoryCoordinateSymbol), Optional.of(slotSymbol), Optional.of(itemTypeSymbol)),
+        this(entity, Arrays.asList(Optional.ofNullable(inventoryCoordinateSymbol), Optional.ofNullable(slotSymbol), Optional.ofNullable(itemTypeSymbol)),
                 Arrays.asList(BaseValue.Type.Coordinate.ordinal(), BaseValue.Type.Coordinate.ordinal(), BaseValue.Type.ItemType.ordinal()));
     }
     public InventoryRule(ICogniEntity entity, List<Optional<Integer>> argumentSymbols, List<Integer> argumentTypes) {
@@ -60,27 +57,32 @@ public class InventoryRule extends RuleLine<Solution> {
 
             // TODO: be able to get inventory from entities
             BlockPos inventoryBlockPos = new BlockPos(inventoryCoordinateValue.getX(), inventoryCoordinateValue.getY(), inventoryCoordinateValue.getZ());
-            if(!argumentSymbols.get(1).isPresent() || !argumentSymbols.get(2).isPresent()) {
-                // no symbol bound to the output, no need to do anything
-                return new EmptyRuleIterator();
-            }
+//            if(!argumentSymbols.get(1).isPresent() || !argumentSymbols.get(2).isPresent()) {
+//                // no symbol bound to the output, no need to do anything
+//                return new EmptyRuleIterator();
+//            }
 
-            if(!symbols.containsKey(argumentSymbols.get(1).get())) {
+            if(argumentSymbols.get(1).isPresent()&&!symbols.containsKey(argumentSymbols.get(1).get())) {
                 symbols.put(argumentSymbols.get(1).get(), new Symbol<CoordinateValue>(argumentSymbols.get(1).get()));
             }
-            Symbol<Object> arg1 = (Symbol<Object>) symbols.get(argumentSymbols.get(1).get());
-            Symbol<CoordinateValue> slotSymbol = (Symbol<CoordinateValue>) symbols.get(argumentSymbols.get(1).get());
+            if(argumentSymbols.get(2).isPresent()&&!symbols.containsKey(argumentSymbols.get(2).get())) {
+                symbols.put(argumentSymbols.get(2).get(), new Symbol<ItemTypeValue>(argumentSymbols.get(2).get()));
+            }
+
+            Symbol<Object> arg1 = (Symbol<Object>) (argumentSymbols.get(1).isPresent() ? symbols.get(argumentSymbols.get(1).get()) : new Symbol<CoordinateValue>(-1));
+            Symbol<Object> arg2 = (Symbol<Object>) (argumentSymbols.get(2).isPresent() ? symbols.get(argumentSymbols.get(2).get()) : new Symbol<CoordinateValue>(-1));
+
+            Symbol<CoordinateValue> slotSymbol = (Symbol<CoordinateValue>) (Symbol<?>) arg1;
+            Symbol<ItemTypeValue> itemTypeSymbol = (Symbol<ItemTypeValue>) (Symbol<?>) arg2;
+
             Optional<CoordinateValue> maybeFilterSlotValue = slotSymbol.getValue();
             if(maybeFilterSlotValue.isPresent() && maybeFilterSlotValue.get().getSlot() == null) {
                 maybeFilterSlotValue = Optional.empty();
             }
             Optional<CoordinateValue> filterSlotValue = maybeFilterSlotValue;
 
-            if(!symbols.containsKey(argumentSymbols.get(2).get())) {
-                symbols.put(argumentSymbols.get(2).get(), new Symbol<ItemTypeValue>(argumentSymbols.get(2).get()));
-            }
-            Symbol<Object> arg2 = (Symbol<Object>) symbols.get(argumentSymbols.get(2).get());
-            Symbol<ItemTypeValue> itemTypeSymbol = (Symbol<ItemTypeValue>) symbols.get(argumentSymbols.get(2).get());
+//            Symbol<Object> arg2 = (Symbol<Object>) symbols.get(argumentSymbols.get(2).get());
+//            Symbol<ItemTypeValue> itemTypeSymbol = (Symbol<ItemTypeValue>) symbols.get(argumentSymbols.get(2).get());
             Optional<ItemTypeValue> filterItemTypeValue = itemTypeSymbol.getValue();
 
             if(!entity.getCreatureEntity().isPresent()) {
@@ -117,7 +119,12 @@ public class InventoryRule extends RuleLine<Solution> {
                             counter++;
                             continue;
                         }
-                        ItemTypeValue nextItemType = new ItemTypeValue(itemHandler.getStackInSlot(counter).getItem());
+                        ItemStack nextItemStack = itemHandler.getStackInSlot(counter);
+                        if(nextItemStack.isEmpty()) {
+                            counter++;
+                            continue;
+                        }
+                        ItemTypeValue nextItemType = new ItemTypeValue(nextItemStack.getItem());
                         if(filterItemTypeValue.isPresent() &&
                                 !filterItemTypeValue.get().equalsValue(nextItemType)) {
                             counter++;

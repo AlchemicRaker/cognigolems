@@ -91,8 +91,6 @@ public class MoveItemSolution extends Solution {
                 moveToGoal.activate(toX, toY+0.5, toZ, 1);
                 return false;
             }
-//            ChickenEntity
-            //TODO: put item into that inventory
 
             IItemHandler itemHandler = Optional.ofNullable(creatureEntity.level.getBlockEntity(new BlockPos(toX, toY, toZ)))
                     .map(value -> this.fromSide != null
@@ -102,7 +100,7 @@ public class MoveItemSolution extends Solution {
                     .resolve().orElse(null);
 
             if(itemHandler != null) {
-                ItemStack remainingItemStack = injectItem(itemHandler, heldItem);
+                ItemStack remainingItemStack = injectItem(itemHandler, heldItem, false);
 
                 // drop whatever doesn't fit in the destination
                 if(!remainingItemStack.isEmpty()) {
@@ -142,8 +140,37 @@ public class MoveItemSolution extends Solution {
                 .orElseGet(LazyOptional::empty)
                 .resolve().orElse(null);
 
+        IItemHandler destinationItemHandler = Optional.ofNullable(creatureEntity.level.getBlockEntity(new BlockPos(toX, toY, toZ)))
+                .map(value -> this.fromSide != null
+                        ? value.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, this.fromSide)
+                        : value.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY))
+                .orElseGet(LazyOptional::empty)
+                .resolve().orElse(null);
+
         if(itemHandler != null) {
-            ItemStack takenItem = extractItem(itemHandler);
+            // only do this if we can verify that the item can be put into the destination
+            Integer forceQuantity = null;
+
+            if(destinationItemHandler != null) {
+                // known destination inventory? make sure it can fit the item we're about to take
+                ItemStack itemsToMove = extractItem(itemHandler, null, true);
+                if(!itemsToMove.isEmpty()) {
+                    ItemStack predictedRemains = injectItem(destinationItemHandler, itemsToMove, true);
+                    if(!predictedRemains.isEmpty()) {
+                        // attempting to move it won't move everything we can take
+
+                        // if we weren't able to move _anything_, abort now
+                        if(itemsToMove.getCount() == predictedRemains.getCount()) {
+                            return true;
+                        }
+
+                        // able to move some. only take that amount.
+                        forceQuantity = itemsToMove.getCount() - predictedRemains.getCount();
+                    }
+                }
+            }
+
+            ItemStack takenItem = extractItem(itemHandler, forceQuantity, false);
             if(takenItem == null) {
                 return true; //unable to take item
             }
@@ -160,29 +187,29 @@ public class MoveItemSolution extends Solution {
     }
 
     // returns remaining held
-    ItemStack injectItem(IItemHandler itemHandler, ItemStack itemStack) {
+    ItemStack injectItem(IItemHandler itemHandler, ItemStack itemStack, boolean simulate) {
         if(toSlot != null) {
-            return itemHandler.insertItem(toSlot, itemStack, false);
+            return itemHandler.insertItem(toSlot, itemStack, simulate);
         }
         ItemStack remainingItemStack = itemStack;
         for (int i = 0; i < itemHandler.getSlots() && !remainingItemStack.isEmpty(); i++) {
-            remainingItemStack = itemHandler.insertItem(i, remainingItemStack, false);
+            remainingItemStack = itemHandler.insertItem(i, remainingItemStack, simulate);
         }
         return remainingItemStack;
     }
 
-    ItemStack extractItem(IItemHandler itemHandler) {
+    ItemStack extractItem(IItemHandler itemHandler, Integer forceQuantity, boolean simulate) {
         if(fromSlot != null) {
             ItemStack itemStack = itemHandler.getStackInSlot(fromSlot);
             if(!itemStack.isEmpty()) {
-                return itemHandler.extractItem(fromSlot, itemStack.getCount(), false);
+                return itemHandler.extractItem(fromSlot, forceQuantity == null ? itemStack.getCount() : Math.min(itemStack.getCount(), forceQuantity), simulate);
             }
             return ItemStack.EMPTY;
         }
         for (int i = 0; i < itemHandler.getSlots(); i++) {
             ItemStack itemStack = itemHandler.getStackInSlot(i);
             if(!itemStack.isEmpty()) {
-                return itemHandler.extractItem(i, itemStack.getCount(), false);
+                return itemHandler.extractItem(i, forceQuantity == null ? itemStack.getCount() : Math.min(itemStack.getCount(), forceQuantity), simulate);
             }
         }
         return ItemStack.EMPTY;
